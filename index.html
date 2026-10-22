@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="km" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>អាពាហ៍ពិពាហ៍ ប៉ាគ័ង & សុភ័ក្រលាប - 15 វិច្ឆិកា 2026</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Khmer & Serif style -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Content:wght@400;700&family=Kantumruy+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        weddingGold: '#D4AF37',
+                        weddingDarkGold: '#997A15',
+                        weddingRed: '#8B0000',
+                        weddingPinkSoft: '#FDF2F4',
+                        weddingRose: '#C5A059'
+                    },
+                    fontFamily: {
+                        khmer: ['"Kantumruy Pro"', '"Battambang"', 'sans-serif'],
+                        content: ['"Content"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background-color: #2b0a0e;
+            color: #2D2D2D;
+        }
+        .card-bg-texture {
+            background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 245, 245, 0.92)), 
+                        url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+        }
+        .hero-bg-custom {
+            background: linear-gradient(rgba(43, 10, 14, 0.75), rgba(43, 10, 14, 0.85)), 
+                        url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1950&q=80') center/cover no-repeat;
+        }
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-animate {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+    </style>
+
+    <!-- Firebase SDK (Modular) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            databaseURL: "https://widding-a67ef-default-rtdb.firebaseio.com/"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Handle Form Submit and Save to Firebase
+        window.handleRSVP = function(event) {
+            event.preventDefault();
+            const name = document.getElementById("guestName").value;
+            const attendance = document.getElementById("attendance").value;
+            const count = document.getElementById("guestCount").value;
+            const wishes = document.getElementById("wishesText").value;
+
+            if(name && wishes) {
+                push(ref(db, 'wishes/'), {
+                    name: name,
+                    attendance: attendance,
+                    count: count,
+                    message: wishes,
+                    timestamp: Date.now()
+                }).then(() => {
+                    document.getElementById("rsvpForm").reset();
+                    showModal("ការបញ្ជូនជោគជ័យ!", "សូមអរគុណ " + name + " ដែលបានផ្ញើសារជូនពរ និងបញ្ជាក់វត្តមានមកកាន់ពួកយើង!");
+                }).catch((error) => {
+                    alert("មានបញ្ហា៖ " + error.message);
+                });
+            }
+        };
+
+        // Realtime Listener for Incoming Wishes
+        const wishesRef = ref(db, 'wishes/');
+        onChildAdded(wishesRef, (snapshot) => {
+            const val = snapshot.val();
+            const container = document.getElementById("wishesContainer");
+            const newWishEl = document.createElement("div");
+            newWishEl.className = "bg-white/90 text-gray-800 p-5 rounded-2xl shadow-md border border-weddingGold/30 modal-animate";
+            
+            const attendanceText = val.attendance === 'attending' ? `(អញ្ជើញចូលរួម ${val.count} នាក់)` : '(ជូនពរពីចម្ងាយ)';
+            
+            newWishEl.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-bold text-weddingRed text-sm">${escapeHtml(val.name)} <span class="text-xs text-gray-500 font-normal">${attendanceText}</span></span>
+                    <span class="text-xs text-gray-400">ទើបតែឥឡូវនេះ</span>
+                </div>
+                <p class="text-gray-700 text-sm">${escapeHtml(val.message)}</p>
+            `;
+            
+            container.prepend(newWishEl);
+        });
+
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+    </script>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-weddingRed selection:text-white">
+
+    <!-- Header / Hero Section -->
+    <header class="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden hero-bg-custom text-white">
+        <div class="absolute inset-x-0 top-0 h-4 bg-gradient-to-r from-weddingRed via-weddingGold to-weddingRed"></div>
+
+        <div class="max-w-3xl mx-auto z-10 py-12">
+            <div class="inline-block bg-weddingRed/80 backdrop-blur-md px-6 py-2 rounded-full border border-weddingGold shadow-lg mb-6 animate-pulse">
+                <span class="text-weddingGold font-semibold text-sm md:text-base">ពិធីមង្គលការដ៏ឧឡារិក</span>
+            </div>
+
+            <h1 class="text-xl md:text-2xl font-bold text-amber-100 leading-relaxed mb-4 font-khmer drop-shadow-md">
+                សូមគោរពអញ្ជើញលោក លោកស្រី អ្នកនាងកញ្ញា អញ្ជើញមកចូលរួមពិធីមង្គលការយើងខ្ញុំផង
+            </h1>
+            <p class="text-gray-200 text-sm md:text-base mb-8 drop-shadow">
+                កូនកំលោះ និងកូនក្រមុំរៀបការ សូមអញ្ជើញមិត្តភ័ក្ត្រ និងពុកម៉ែបងប្អូនមកអញ្ជើញញ៉ាំភោជនីយអាហារ។
+            </p>
+
+            <div class="w-24 h-1 bg-weddingGold mx-auto my-6 rounded-full shadow-lg"></div>
+
+            <!-- Couple Names -->
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-10 my-8">
+                <!-- Groom -->
+                <div class="flex flex-col items-center">
+                    <div class="w-36 h-36 md:w-44 md:h-44 rounded-full overflow-hidden border-4 border-weddingGold shadow-2xl mb-4 bg-amber-200">
+                        <img src="https://placehold.co/400x400/2b0a0e/d4af37?text=ប៉ាគ័ង" alt="កូនកំលោះ ប៉ាគ័ង" class="w-full h-full object-cover">
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-weddingGold drop-shadow">លោក ប៉ាគ័ង</h2>
+                    <span class="text-xs text-amber-200 mt-1 font-medium tracking-wider">កូនកំលោះ</span>
+                </div>
+
+                <!-- Heart Icon -->
+                <div class="text-weddingGold text-3xl md:text-4xl my-2 animate-bounce">
+                    <i class="fa-solid fa-ring"></i>
+                </div>
+
+                <!-- Bride -->
+                <div class="flex flex-col items-center">
+                    <div class="w-36 h-36 md:w-44 md:h-44 rounded-full overflow-hidden border-4 border-weddingGold shadow-2xl mb-4 bg-amber-200">
+                        <img src="https://placehold.co/400x400/2b0a0e/d4af37?text=សុភ័ក្រលាប" alt="កូនក្រមុំ សុភ័ក្រលាប" class="w-full h-full object-cover">
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-weddingGold drop-shadow">អ្នកនាង សុភ័ក្រលាប</h2>
+                    <span class="text-xs text-amber-200 mt-1 font-medium tracking-wider">កូនក្រមុំ</span>
+                </div>
+            </div>
+
+            <!-- Date & Location Badge -->
+            <div class="mt-6 bg-black/40 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-weddingGold/40 max-w-xl mx-auto">
+                <div class="flex items-center justify-center space-x-2 text-weddingGold mb-2">
+                    <i class="fa-regular fa-calendar-days text-xl"></i>
+                    <span class="font-bold text-base md:text-lg">ថ្ងៃអាទិត្យ ទី១៥ ខែវិច្ឆិកា ឆ្នាំ២០២៦ វេលាម៉ោង ០៦:៣០ នាទីព្រឹក</span>
+                </div>
+                <div class="text-gray-200 text-sm md:text-base flex items-center justify-center space-x-2 mt-2">
+                    <i class="fa-solid fa-location-dot text-weddingRed"></i>
+                    <span>ភូមិអង្កតាក្កូវ សង្កាត់គោករការ ខណ្ឌព្រែកព្នៅ រាជធានីភ្នំពេញ</span>
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <a href="#details" class="inline-flex items-center space-x-2 bg-weddingRed border border-weddingGold text-white px-8 py-3 rounded-full shadow-lg hover:bg-weddingDarkGold transition duration-300 font-semibold text-base">
+                    <span>ព័ត៌មានលម្អិត</span>
+                    <i class="fa-solid fa-arrow-down animate-bounce"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Countdown Section -->
+    <section id="details" class="py-16 px-4 card-bg-texture border-y-2 border-weddingGold/30">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-2xl md:text-3xl font-bold text-weddingRed mb-2">ថ្ងៃទីរាប់ថយក្រោយ (Countdown)</h2>
+            <p class="text-gray-600 mb-10">រង់ចាំថ្ងៃដ៏វិសេសវិសាលនៃពួកយើង</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+                <div class="bg-white/90 border border-weddingGold/50 p-6 rounded-2xl shadow-md">
+                    <span id="days" class="text-3xl md:text-4xl font-bold text-weddingRed block mb-1">00</span>
+                    <span class="text-gray-700 text-sm font-semibold">ថ្ងៃ</span>
+                </div>
+                <div class="bg-white/90 border border-weddingGold/50 p-6 rounded-2xl shadow-md">
+                    <span id="hours" class="text-3xl md:text-4xl font-bold text-weddingRed block mb-1">00</span>
+                    <span class="text-gray-700 text-sm font-semibold">ម៉ោង</span>
+                </div>
+                <div class="bg-white/90 border border-weddingGold/50 p-6 rounded-2xl shadow-md">
+                    <span id="minutes" class="text-3xl md:text-4xl font-bold text-weddingRed block mb-1">00</span>
+                    <span class="text-gray-700 text-sm font-semibold">នាទី</span>
+                </div>
+                <div class="bg-white/90 border border-weddingGold/50 p-6 rounded-2xl shadow-md">
+                    <span id="seconds" class="text-3xl md:text-4xl font-bold text-weddingRed block mb-1">00</span>
+                    <span class="text-gray-700 text-sm font-semibold">វិនាទី</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Wedding Program & Location Section -->
+    <section class="py-16 px-4 bg-[#2b0a0e] text-white">
+        <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl shadow-xl border border-weddingGold/40 relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-weddingGold text-gray-900 text-xs px-4 py-1 rounded-bl-xl font-bold">កម្មវិធី</div>
+                <h3 class="text-2xl font-bold text-weddingGold mb-6 flex items-center space-x-3">
+                    <i class="fa-regular fa-clock"></i>
+                    <span>កម្មវិធីបុណ្យប្រពៃណី</span>
+                </h3>
+                <div class="space-y-6 text-gray-200">
+                    <div class="border-l-4 border-weddingGold pl-4 py-1">
+                        <span class="text-sm font-semibold text-weddingGold block">ម៉ោង ០៦:៣០ នាទីព្រឹក</span>
+                        <p class="font-bold text-lg text-white">ពិធីហែជំនូន និងសូត្រមន្តចម្រើនព្រះបរិត្ត</p>
+                    </div>
+                    <div class="border-l-4 border-weddingGold pl-4 py-1">
+                        <span class="text-sm font-semibold text-weddingGold block">ម៉ោង ១០:៣០ នាទីព្រឹក</span>
+                        <p class="font-bold text-lg text-white">ពិធីសំពះផ្ទឹម និងបំពាក់ចិញ្ចៀន</p>
+                    </div>
+                    <div class="border-l-4 border-weddingGold pl-4 py-1">
+                        <span class="text-sm font-semibold text-weddingGold block">ម៉ោង ១២:០០ ថ្ងៃត្រង់</span>
+                        <p class="font-bold text-lg text-white">ពិធីជប់លៀងអបអរសាទរ ហូបអាហារសាមគ្គី</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl shadow-xl border border-weddingGold/40 relative overflow-hidden flex flex-col justify-between">
+                <div>
+                    <div class="absolute top-0 right-0 bg-weddingRed text-white text-xs px-4 py-1 rounded-bl-xl font-bold">ទីតាំង</div>
+                    <h3 class="text-2xl font-bold text-weddingGold mb-6 flex items-center space-x-3">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        <span>ទីកន្លែងរៀបចំពិធី</span>
+                    </h3>
+                    <div class="text-gray-200 space-y-3 mb-6">
+                        <p class="font-bold text-lg text-white">គេហដ្ឋានខាងស្រី ស្ថិតនៅ៖</p>
+                        <p class="leading-relaxed bg-black/30 p-4 rounded-xl border border-weddingGold/30 text-amber-100">
+                            ភូមិអង្កតាក្កូវ សង្កាត់គោករការ ខណ្ឌព្រែកព្នៅ រាជធានីភ្នំពេញ
+                        </p>
+                    </div>
+                </div>
+                <div>
+                    <a href="https://www.google.com/maps/place/11%C2%B035'21.6%22N+104%C2%B048'31.6%22E/@11.5893453,104.8081463,19z" target="_blank" class="w-full bg-weddingRed text-white py-3 px-4 rounded-xl font-semibold flex items-center justify-center space-x-2 hover:bg-weddingGold hover:text-gray-900 transition duration-300 shadow-md border border-weddingGold/50">
+                        <i class="fa-solid fa-diamond-turn-right"></i>
+                        <span>បើកមើលផែនទី (Google Maps)</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- QR Code / Remote Gifting Section -->
+    <section class="py-16 px-4 card-bg-texture">
+        <div class="max-w-xl mx-auto text-center bg-white/95 p-8 md:p-10 rounded-3xl shadow-2xl border-2 border-weddingGold">
+            <span class="inline-block bg-weddingRed text-white text-sm px-4 py-1 rounded-full font-bold mb-4">សម្រាប់អ្នកផ្លូវឆ្ងាយមិនបានចូលរួម</span>
+            <h3 class="text-2xl md:text-3xl font-bold text-weddingRed mb-2">QR កូដកាដូអាពាហ៍ពិពាហ៍</h3>
+            <p class="text-gray-600 text-sm mb-6">ទោះបីជាខកខានមិនបានមកផ្ទាល់ ប៉ុន្តែទឹកចិត្ត និងវត្តមានផ្លូវចិត្តរបស់លោកអ្នកគឺមានតម្លៃជានិច្ច។</p>
+
+            <div class="bg-white p-6 rounded-2xl shadow-md inline-block border-2 border-weddingGold mb-6">
+                <img src="https://placehold.co/220x220/ffffff/000000?text=ABA+QR+Code%0A(PAKUANG+%26%20SOPHEAP)" alt="Wedding QR Code" class="w-52 h-52 object-contain mx-auto rounded-lg">
+                <p class="font-bold text-weddingRed mt-3 text-base">ABA Bank: 000 111 222 (ប៉ាគ័ង & សុភ័ក្រលាប)</p>
+            </div>
+
+            <div class="text-xs text-gray-500">
+                <i class="fa-solid fa-shield-heart text-weddingGold mr-1"></i> សូមអរគុណទុកជាមុនសម្រាប់ទឹកចិត្តដ៏ថ្លៃថ្លារបស់លោកអ្នក!
+            </div>
+        </div>
+    </section>
+
+    <!-- Wishes & RSVP Interactive Section -->
+    <section class="py-16 px-4 bg-[#2b0a0e] text-white">
+        <div class="max-w-2xl mx-auto">
+            <div class="text-center mb-10">
+                <h3 class="text-2xl md:text-3xl font-bold text-weddingGold mb-2">សៀវភៅសារជូនពរ និងវត្តមាន</h3>
+                <p class="text-gray-300 text-sm">សូមផ្ញើសារជូនពរ ឬបញ្ជាក់វត្តមានរបស់អ្នកមកកាន់ពួកយើង</p>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl shadow-xl border border-weddingGold/40 text-gray-800">
+                <form id="rsvpForm" onsubmit="handleRSVP(event)" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-weddingGold mb-2" for="guestName">ឈ្មោះរបស់អ្នក (Your Name)</label>
+                        <input type="text" id="guestName" required placeholder="ឧ. សុខ សុភា" class="w-full px-4 py-3 rounded-xl border border-weddingGold/50 bg-white/90 focus:outline-none focus:ring-2 focus:ring-weddingGold transition">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-weddingGold mb-2" for="attendance">វត្តមាន (Attendance)</label>
+                            <select id="attendance" class="w-full px-4 py-3 rounded-xl border border-weddingGold/50 bg-white/90 focus:outline-none focus:ring-2 focus:ring-weddingGold transition">
+                                <option value="attending">អញ្ជើញចូលរួមផ្ទាល់</option>
+                                <option value="remote">ជូនពរពីចម្ងាយ</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-weddingGold mb-2" for="guestCount">ចំនួនអ្នកចូលរួម</label>
+                            <select id="guestCount" class="w-full px-4 py-3 rounded-xl border border-weddingGold/50 bg-white/90 focus:outline-none focus:ring-2 focus:ring-weddingGold transition">
+                                <option value="1">១ នាក់</option>
+                                <option value="2">២ នាក់</option>
+                                <option value="3">៣ នាក់</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-weddingGold mb-2" for="wishesText">សារជូនពរ (Wishes)</label>
+                        <textarea id="wishesText" rows="3" required placeholder="សូមជូនពរឱ្យកូនកំលោះកូនក្រមុំមានសុភមង្គល..." class="w-full px-4 py-3 rounded-xl border border-weddingGold/50 bg-white/90 focus:outline-none focus:ring-2 focus:ring-weddingGold transition"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-weddingRed text-white font-bold py-3.5 rounded-xl hover:bg-weddingGold hover:text-gray-900 transition duration-300 shadow-md border border-weddingGold">
+                        បញ្ជូនសារ និងអវត្តមាន
+                    </button>
+                </form>
+            </div>
+
+            <!-- Wishes List Display Container -->
+            <div class="mt-10">
+                <h4 class="text-xl font-bold text-weddingGold mb-4 text-center">សារជូនពរពីមិត្តភក្តិ និងក្រុមគ្រួសារ</h4>
+                <div id="wishesContainer" class="space-y-4">
+                    <!-- Dynamic wishes from Firebase will appear here automatically -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Custom Success Message Modal -->
+    <div id="customModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+        <div class="bg-white p-8 rounded-3xl max-w-sm w-full mx-4 text-center shadow-2xl modal-animate border-2 border-weddingGold">
+            <div class="w-16 h-16 bg-red-100 text-weddingRed rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+                <i class="fa-solid fa-heart"></i>
+            </div>
+            <h3 id="modalTitle" class="text-xl font-bold text-gray-800 mb-2">សូមអរគុណ!</h3>
+            <p id="modalMessage" class="text-gray-600 text-sm mb-6">សារជូនពររបស់អ្នកត្រូវបានបញ្ជូនដោយជោគជ័យ។</p>
+            <button onclick="closeModal()" class="w-full bg-weddingRed text-white font-bold py-2.5 rounded-xl hover:bg-weddingGold hover:text-gray-900 transition">
+                យល់ព្រម
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white py-12 px-4 text-center mt-auto border-t border-weddingGold/30">
+        <div class="max-w-xl mx-auto">
+            <h2 class="text-2xl font-bold font-khmer gold-gradient-text mb-3">ប៉ាគ័ង & សុភ័ក្រលាប</h2>
+            <p class="text-gray-400 text-sm mb-6">អរគុណទុកជាមុនសម្រាប់ការអញ្ជើញ និងការចូលរួមដ៏មានតម្លៃរបស់លោកអ្នក!</p>
+            <div class="w-16 h-0.5 bg-weddingGold mx-auto mb-6"></div>
+            <p class="text-xs text-gray-500">© 2026 Wedding Invitation. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Countdown and Modal -->
+    <script>
+        const weddingDate = new Date("November 15, 2026 06:30:00").getTime();
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = weddingDate - now;
+
+            if (distance < 0) {
+                document.getElementById("days").innerText = "00";
+                document.getElementById("hours").innerText = "00";
+                document.getElementById("minutes").innerText = "00";
+                document.getElementById("seconds").innerText = "00";
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerText = String(days).padStart(2, '0');
+            document.getElementById("hours").innerText = String(hours).padStart(2, '0');
+            document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
+            document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        function showModal(title, message) {
+            document.getElementById("modalTitle").innerText = title;
+            document.getElementById("modalMessage").innerText = message;
+            document.getElementById("customModal").classList.remove("hidden");
+        }
+
+        function closeModal() {
+            document.getElementById("customModal").classList.add("hidden");
+        }
+    </script>
+</body>
+</html>
